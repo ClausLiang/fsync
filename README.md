@@ -40,9 +40,8 @@
 npx @larksuite/cli@latest install
 ```
 
-新版 `install` 会自动建应用、写好配置、并完成默认登录，**一条就够**。
+新版 `install` 会自动建应用、写好配置、并完成默认登录，**一条就够**，无需再跑 `config init` 或 `auth login`。
 
-> 不用再跑 `lark-cli config init`（会多建一个重复应用）或 `lark-cli auth login`。
 > 万一某次 push/pull 提示缺权限，本工具会自动弹浏览器让你点「同意」补授权，无需手动命令。
 
 ### 使用
@@ -77,7 +76,7 @@ python3 --version
 
 ### 一次性后台准备（懂行的人做一次）
 
-> **和 Node 版不一样**：Node 版的 `lark-cli install` 会**自动帮你创建飞书应用**；Python 版不经过 lark-cli，所以需要你**自己在飞书开放平台建一个自建应用**并开通权限。（如果你已经用过 lark-cli，也可以直接复用它当初自动建的那个应用，只补下面缺的设置即可。）
+> Python 版不依赖 lark-cli，需要你**自己在飞书开放平台建一个自建应用**并开通权限（Node 版的 `install` 会自动建应用，省了这步）。
 
 到 [open.feishu.cn](https://open.feishu.cn) → 开发者后台 → 创建/选择一个**自建应用**，然后：
 
@@ -123,7 +122,7 @@ python3 fsync.py logout                        # 清除本地登录缓存
 
 ## 工作原理
 
-`push 我的工作总结` 时：
+两版逻辑相同，下面以 Node 版命令示意（Python 版调对应的飞书 API，效果一样）。`push 我的工作总结` 时：
 
 1. `drive files list` 列根目录 → 找/建基目录「文档同步」，拿它的 token；
 2. 列基目录 → 找名为「我的工作总结」且 `type=folder` 的项；找不到则 `create_folder` 在基目录下建一个；
@@ -138,8 +137,7 @@ python3 fsync.py logout                        # 清除本地登录缓存
 ## 给非 IT 用户分发时
 
 - **运行时授权**：工具会自动处理。遇到缺权限/未登录，它不会甩英文 JSON，而是提示「需要飞书授权，即将打开浏览器，请点同意」并自动发起授权，用户点一下「同意」即可继续。
-- **一次性后台配置（需要懂行的人做一次）**：创建飞书自建应用、在「权限管理」里开通云空间相关权限、`lark-cli config init` 填 app_id/secret。**建议由你统一建一个应用、配齐权限**，再把 app_id/secret 给同事，他们只需 `config init` + 点浏览器同意，不用碰开放平台。
-  - 注：这里用 `config init` 是「**多人共用同一个应用**」的场景（手动指向你建的那个 app）；和上面 §A「自己一台机器用、不必 `config init`」不冲突——那种情况是让 `install` 自动建一个属于自己的应用。
+- **一次性后台配置（需要懂行的人做一次）**：统一建一个飞书自建应用、在「权限管理」里开通云空间相关权限，再把 app_id/secret 发给同事。同事只需 `lark-cli config init` 填入、点浏览器同意，不用碰开放平台。
 
 ## 注意
 
