@@ -46,8 +46,7 @@ const PULL_IF_EXISTS = 'smart'; // 本地较新则跳过（保护未上传改动
 // 所有同步文件夹都放在「我的空间」下这个基目录里，保持根目录清爽。留空 '' 则直接用根目录。
 const BASE_FOLDER = '文档同步';
 
-// ⚠️ create_folder 的请求体参数用哪个 flag：按 lark-cli 惯例 = inputSchema 顶层属性名 'data'。
-// 若真跑时报“unknown flag”，跑 `lark-cli drive files create_folder --help` 看请求体 flag 名，改这里。
+// create_folder 用 --data 传请求体 JSON（已对 `lark-cli drive files create_folder --help` 核实，支持 @file）。
 const CREATE_DATA_FLAG = '--data';
 
 // 本工具会用到的全部飞书权限。缺授权时一次性把这些都授权掉，避免一个个补。

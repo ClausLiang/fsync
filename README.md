@@ -146,4 +146,3 @@ python3 fsync.py logout                        # 清除本地登录缓存
 - **重名文件夹**：若飞书根目录有多个同名文件夹，取最近修改的那个并告警，建议去飞书清理。
 - **Windows**：脚本已处理（`shell` 调用 + 临时文件传中文参数），无需额外设置。
 - 删除不自动同步：本地删了云端不会删（更安全）。
-- 若 `create_folder` 报 “unknown flag”，跑 `lark-cli drive files create_folder --help` 看请求体 flag 名，改脚本顶部 `CREATE_DATA_FLAG`。
