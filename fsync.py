@@ -34,6 +34,7 @@ import os
 import sys
 import time
 import secrets
+import ssl
 import webbrowser
 from pathlib import Path
 from uuid import uuid4
@@ -129,16 +130,40 @@ class FeishuError(Exception):
         self.msg = msg
         self.status = status
 
+def _ssl_context():
+    """构造 HTTPS 校验上下文。
+
+    公司网络常有 TLS 拦截代理，会换上自签名根证书导致默认校验失败。出口：
+      - FSYNC_CA_BUNDLE / SSL_CERT_FILE / REQUESTS_CA_BUNDLE：指向公司根证书 .pem，照常校验（推荐）。
+      - FSYNC_INSECURE=1：彻底关闭校验（仅在信任当前网络时临时用）。
+    """
+    if os.environ.get("FSYNC_INSECURE") == "1":
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        return ctx
+    cafile = (os.environ.get("FSYNC_CA_BUNDLE")
+              or os.environ.get("SSL_CERT_FILE")
+              or os.environ.get("REQUESTS_CA_BUNDLE"))
+    return ssl.create_default_context(cafile=cafile) if cafile else ssl.create_default_context()
+
 def _request(method, url, headers=None, data=None):
     """发一个请求，返回 (status, body_bytes)。HTTP 错误也读出 body 一起返回，不抛。"""
     req = Request(url, data=data, method=method, headers=headers or {})
     try:
-        with urlopen(req, timeout=60) as resp:
+        with urlopen(req, timeout=60, context=_ssl_context()) as resp:
             return resp.status, resp.read()
     except HTTPError as e:
         return e.code, e.read()
     except URLError as e:
-        die(f"网络请求失败：{e.reason}。检查一下网络连接是否正常。")
+        reason = e.reason
+        if isinstance(reason, ssl.SSLCertVerificationError) or "CERTIFICATE_VERIFY_FAILED" in str(reason):
+            die("HTTPS 证书校验失败：当前网络疑似有 TLS 拦截代理（公司防火墙/安全软件）。\n"
+                "  方案一（推荐）：导出公司根证书，再指给 fsync：\n"
+                "    export FSYNC_CA_BUNDLE=/路径/corp-ca.pem\n"
+                "  方案二（临时、不校验）：export FSYNC_INSECURE=1\n"
+                f"  原始错误：{reason}")
+        die(f"网络请求失败：{reason}。检查一下网络连接是否正常。")
 
 def _parse_envelope(status, body):
     """解析 {code,msg,data} 信封；code!=0 抛 FeishuError。返回 data。"""

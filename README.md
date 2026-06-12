@@ -139,6 +139,30 @@ python3 fsync.py logout                        # 清除本地登录缓存
 - **运行时授权**：工具会自动处理。遇到缺权限/未登录，它不会甩英文 JSON，而是提示「需要飞书授权，即将打开浏览器，请点同意」并自动发起授权，用户点一下「同意」即可继续。
 - **一次性后台配置（需要懂行的人做一次）**：统一建一个飞书自建应用、配齐权限，再把 app_id/secret 发给同事，同事不用碰开放平台——Node 版让同事 `lark-cli config init` 填入即可，Python 版让同事 `python3 fsync.py setup` 填入即可，之后都是点浏览器「同意」。
 
+## 排查
+
+### HTTPS 证书校验失败（`CERTIFICATE_VERIFY_FAILED` / `self-signed certificate in certificate chain`）
+
+不是网络不通，而是当前网络有 **TLS 拦截代理**（公司防火墙、安全软件、杀软的 HTTPS 检查）在中间换上了自签名根证书，Python 默认不信任它，于是校验失败。Python 版（`fsync.py`）提供两个出口：
+
+- **方案一（推荐，仍校验）**：拿到公司根证书 `.pem`，用环境变量指给 fsync——
+
+  ```bash
+  export FSYNC_CA_BUNDLE=/路径/corp-ca.pem
+  python3 fsync.py ls
+  ```
+
+  根证书通常在系统里：Linux 一般是 `/etc/ssl/certs/ca-certificates.crt`（已含公司证书时直接指它即可）；macOS 可从「钥匙串访问」把企业根证书导出为 `.pem`。也兼容标准的 `SSL_CERT_FILE` / `REQUESTS_CA_BUNDLE`。
+
+- **方案二（临时，跳过校验）**：信任当前网络、只想先跑通时——
+
+  ```bash
+  export FSYNC_INSECURE=1
+  python3 fsync.py ls
+  ```
+
+  这会关闭证书校验，失去中间人防护，仅建议临时排查用。
+
 ## 注意
 
 - **文件级镜像**：同步目录里**所有文件**（不只 `.md`，也含图片等附件；docx 等在线文档不碰）。
