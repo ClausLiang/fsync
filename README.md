@@ -1,5 +1,7 @@
 # fsync —— 本地子目录 ↔ 飞书同名文件夹（纯名字驱动）
 
+[![GitHub](https://img.shields.io/badge/GitHub-ClausLiang%2Ffsync-181717?logo=github)](https://github.com/ClausLiang/fsync)
+
 通用同步工具，底层用 lark-cli 原生的 `drive +push` / `drive +pull`（目录↔文件夹的文件级镜像）。
 
 **你只需要敲文件夹名字，全程不碰 token。** 工具内部按名字在你的飞书账号里找到（或创建）同名文件夹，token 自动解析。因为解析的是同一个飞书账号，所以**任意电脑上同名 = 同一个云端文件夹**——换电脑什么都不用带，名字一样就接得上。
