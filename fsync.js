@@ -75,8 +75,8 @@ function parseErr(raw) {
   try { const j = JSON.parse(raw); return j.error || j; } catch { return null; }
 }
 
-// 把开发者向的错误翻译成大白话；返回 null 表示“这类错我没专门翻译”
-function friendlyError(errObj, raw) {
+// 把开发者向的错误翻译成大白话；返回 null 表示这类错未专门翻译
+function friendlyError(errObj) {
   if (!errObj) return null;
   const t = errObj.type;
   if (t === 'authentication') {
@@ -112,7 +112,7 @@ function larkCapture(args, cwd) {
   const raw = ((r.stdout || '') + (r.stderr || '')).trim();
   const errObj = parseErr(raw);
   if (tryAutoReauth(errObj)) return larkCapture(args, cwd); // 重新授权后重试一次
-  const friendly = friendlyError(errObj, raw);
+  const friendly = friendlyError(errObj);
   die(friendly || `操作失败：\n${raw}`);
 }
 
