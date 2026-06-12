@@ -3,8 +3,8 @@
  * fsync —— 「本地子目录 ↔ 飞书同名文件夹」同步工具（纯名字驱动，不碰 token）
  *
  * 底层用 lark-cli：
- *   drive files list            → 列根目录，按名字找到/确认文件夹，拿它的 token
- *   drive files create_folder   → 没有就在根目录建一个同名文件夹
+ *   drive files list            → 列目录，找/建基目录「文档同步」，再在其中按名字找到目标文件夹，拿它的 token
+ *   drive files create_folder   → 没有就创建（基目录或目标文件夹）
  *   drive +push / +pull         → 本地子目录 ↔ 该文件夹 的文件级镜像
  *
  * 特点：
@@ -21,13 +21,12 @@
  * 用法：
  *   node fsync.js push <目录名> [--force] [--dry-run]
  *   node fsync.js pull <目录名> [--force] [--dry-run]
- *   node fsync.js ls                      # 列出飞书根目录下的文件夹（排查用）
+ *   node fsync.js ls                      # 列出飞书「文档同步」下的文件夹（排查用）
  *   node fsync.js --help
  *
  * 首次 setup（每台机器一次）：
- *   npx @larksuite/cli@latest install
- *   lark-cli config init
- *   lark-cli auth login --recommend
+ *   npx @larksuite/cli@latest install    # 自动建应用 + 配置 + 登录，一条就够
+ *   （缺权限时本工具会自动开浏览器引导授权，无需手动 config init / auth login）
  */
 
 'use strict';
@@ -79,7 +78,7 @@ function parseErr(raw) {
 // 把开发者向的错误翻译成大白话；返回 null 表示“这类错我没专门翻译”
 function friendlyError(errObj, raw) {
   if (!errObj) return null;
-  const t = errObj.type, sub = errObj.subtype;
+  const t = errObj.type;
   if (t === 'authentication') {
     return '你还没登录飞书（或登录已过期）。请运行：\n  lark-cli auth login --recommend\n登录后在浏览器点「同意」，再重试。';
   }
@@ -245,7 +244,7 @@ function printHelp() {
 用法：
   node fsync.js push <目录名> [--force] [--dry-run]   本地子目录 → 飞书同名文件夹（不存在自动建）
   node fsync.js pull <目录名> [--force] [--dry-run]   飞书同名文件夹 → 本地子目录
-  node fsync.js ls                                    列出飞书根目录下的文件夹
+  node fsync.js ls                                    列出飞书「文档同步」下的文件夹
   node fsync.js --help
 
 说明：
@@ -253,7 +252,7 @@ function printHelp() {
   - 全程不需要 token；工具按名字自动解析/创建。
   - --force 用 overwrite 无条件覆盖（默认 smart：按新旧增量并保护较新一方）。
 
-首次 setup：npx @larksuite/cli@latest install && lark-cli config init && lark-cli auth login --recommend`);
+首次 setup：npx @larksuite/cli@latest install   （一条就够；缺权限时工具会自动引导授权）`);
 }
 
 function main() {
