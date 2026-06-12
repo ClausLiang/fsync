@@ -1,0 +1,6 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# fsync 运行时临时文件（Node 版传中文参数用）
+._fsync_*.json
