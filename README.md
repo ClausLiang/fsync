@@ -1,6 +1,7 @@
 # fsync —— 本地子目录 ↔ 飞书同名文件夹（纯名字驱动）
 
 [![GitHub](https://img.shields.io/badge/GitHub-ClausLiang%2Ffsync-181717?logo=github)](https://github.com/ClausLiang/fsync)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
 
 通用同步工具，底层用 lark-cli 原生的 `drive +push` / `drive +pull`（目录↔文件夹的文件级镜像）。
 
