@@ -3,7 +3,7 @@
 """
 fsync.py —— 「本地子目录 ↔ 飞书同名文件夹」同步工具（纯 Python，直连飞书 API，不依赖 lark-cli）
 
-与 Node 版（fsync.js）行为一致，但自己接管了登录与凭据：
+自己接管登录与凭据（无需 lark-cli），主要特点：
   - 独立 OAuth v2 登录：本地回调服务器 + 浏览器点「同意」，拿 user_access_token / refresh_token，
     存在 ~/.fsync/，过期用 refresh_token 自动续，无感。
   - app_id / app_secret 由 `setup` 一次性录入，也存 ~/.fsync/（仓库外，永不进 git）。
@@ -30,7 +30,6 @@ fsync.py —— 「本地子目录 ↔ 飞书同名文件夹」同步工具（�
 """
 
 import json
-import mimetypes  # noqa: F401  (保留以备扩展 content-type)
 import os
 import sys
 import time
@@ -580,14 +579,13 @@ def cmd_ls():
 
 def cmd_setup():
     info("配置飞书应用凭据（一次性）。\n"
-         "提示：不同于 Node 版的 lark-cli（会自动建应用），Python 版需要你自己在飞书开放平台\n"
-         "建一个【自建应用】并开通权限。请先到 https://open.feishu.cn 准备好：\n"
+         "本工具直连飞书 API，需要你先在飞书开放平台建一个【自建应用】并开通权限。\n"
+         "请到 https://open.feishu.cn 准备好：\n"
          "  1) 权限管理：开通 drive:drive、offline_access，并「发布」应用；\n"
          "     ⚠️ 务必开通的是【用户身份】权限，不是【应用身份】——本工具以你本人身份登录，\n"
          "        文档存进你自己的「我的空间」；只开应用身份会授权失败、也进不了你的个人空间。\n"
          f"  2) 安全设置 → 重定向 URL，添加：{REDIRECT_URI}\n"
-         "  3) 在「凭证与基础信息」里复制 App ID / App Secret 填到下面。\n"
-         "（已用过 lark-cli 的，也可复用它自动建的那个应用，补上重定向 URL、offline_access 和用户身份权限即可。）\n")
+         "  3) 在「凭证与基础信息」里复制 App ID / App Secret 填到下面。\n")
     app_id = input("App ID: ").strip()
     app_secret = input("App Secret: ").strip()
     if not app_id or not app_secret:
